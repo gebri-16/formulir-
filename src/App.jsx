@@ -70,6 +70,7 @@ export default function App() {
   const last = useRef(null);
   const audioRef = useRef(null);
   const setupRef = useRef(null);
+  const modeRef = useRef(1); // 0 reda, 1 rintik, 2 lebat
 
   const [clear, setClear] = useState(0);
   const [unlocked, setUnlocked] = useState(false);
@@ -121,7 +122,7 @@ export default function App() {
       fogCtx.lineCap = "round";
       dropsRef.current.forEach((d, i) => {
         if (Math.random() < 0.008) d.pause = 40 + Math.random() * 80;
-        const step = d.pause > 0 ? (d.pause--, 0) : d.v;
+        const step = d.pause > 0 ? (d.pause--, 0) : d.v * (modeRef.current === 2 ? 1.7 : 1);
         const ny = d.y + step;
         const nx = d.x + Math.sin((d.y + d.wob) / 40) * 0.35;
         fogCtx.lineWidth = d.r * 1.1;
@@ -136,6 +137,25 @@ export default function App() {
         d.y = ny;
         if (d.y > h + 10) dropsRef.current[i] = newDrop(w, false);
       });
+
+      // jumlah tetesan mengikuti mode: reda / rintik / lebat
+      if (frame % 20 === 0) {
+        const target = [0, w / 85, w / 14][modeRef.current] | 0;
+        const arr = dropsRef.current;
+        if (arr.length < target) {
+          for (let k = 0; k < 3 && arr.length < target; k++) arr.push(newDrop(w, false));
+        } else if (arr.length > target) {
+          arr.length = Math.max(target, Math.floor(arr.length * 0.85));
+        }
+      }
+      if (modeRef.current === 2) {
+        // hujan lebat: percikan kecil menghantam kaca
+        for (let k = 0; k < 3; k++) {
+          fogCtx.beginPath();
+          fogCtx.arc(Math.random() * w, Math.random() * h, 1.5 + Math.random() * 3, 0, 7);
+          fogCtx.fill();
+        }
+      }
 
       // embun pelan-pelan menutup lagi selama form masih terkunci
       if (!lockRef.current && frame % 6 === 0) {
@@ -195,6 +215,13 @@ export default function App() {
     go();
     return () => clearTimeout(t);
   }, []);
+
+  // Mode hujan: rintik (default), lebat (suara menyala), reda (setelah login)
+  useEffect(() => {
+    modeRef.current = sent ? 0 : sound ? 2 : 1;
+    const a = audioRef.current;
+    if (a) a.gain.gain.setTargetAtTime(sent ? 0.05 : sound ? 0.5 : 0, a.ac.currentTime, 0.8);
+  }, [sound, sent]);
 
   // Mengusap kaca
   const wipe = (e) => {
@@ -273,10 +300,21 @@ export default function App() {
   };
 
   const p = unlocked ? 1 : Math.min(1, clear / UNLOCK_AT);
+  const hr = new Date().getHours();
+  const waktu = hr < 11 ? "pagi" : hr < 15 ? "siang" : hr < 18 ? "sore" : "malam";
+  const sparks = useRef(
+    Array.from({ length: 26 }, () => ({
+      l: Math.random() * 100,
+      d: Math.random() * 4,
+      t: 5 + Math.random() * 5,
+      s: 3 + Math.random() * 5,
+    }))
+  ).current;
 
   return (
-    <div className="win">
+    <div className={`win${sound ? " heavy" : ""}${sent ? " sent" : ""}`}>
       <canvas ref={sharpRef} aria-hidden="true" />
+      <div className="rainbow" />
       <canvas
         ref={fogRef}
         aria-hidden="true"
@@ -287,6 +325,13 @@ export default function App() {
         onPointerUp={() => (last.current = null)}
         onPointerLeave={() => (last.current = null)}
       />
+      <div className="rain a" />
+      <div className="rain b" />
+      <div className="glow" />
+      {sent &&
+        sparks.map((sp, i) => (
+          <span key={i} className="spark" style={{ left: `${sp.l}%`, width: sp.s, height: sp.s, animationDelay: `${sp.d}s`, animationDuration: `${sp.t}s` }} />
+        ))}
       <div className={`flash${flash ? " on" : ""}`} />
 
       <form
@@ -320,9 +365,9 @@ export default function App() {
           </>
         ) : (
           <div className="done">
-            <h1>Halo, {user}</h1>
-            <p>Kamu sudah masuk. Hangat di dalam, hujan di luar.</p>
-            <button type="button" className="link" onClick={reset}>Embunkan kaca lagi</button>
+            <h1 className="write">Selamat {waktu},<br />{user}</h1>
+            <p className="rise">Hujannya reda. Lihat, ada pelangi.</p>
+            <button type="button" className="link rise2" onClick={reset}>Embunkan kaca lagi</button>
           </div>
         )}
       </form>

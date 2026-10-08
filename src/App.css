@@ -36,3 +36,28 @@
 @keyframes pulse{50%{opacity:.4}}
 .sound{position:absolute;z-index:7;top:30px;right:34px;background:rgba(10,15,28,.45);border:1px solid rgba(255,255,255,.35);border-radius:999px;color:#fff;font:inherit;font-size:1.25rem;padding:4px 16px;cursor:pointer}
 @media (prefers-reduced-motion:reduce){.flash.on,.hint{animation:none}}
+
+/* hujan di luar: rintik (default) dan lebat (saat suara dinyalakan) */
+.rain{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;transition:opacity 2s;background-image:linear-gradient(100deg,transparent 47%,rgba(190,215,255,.4) 50%,transparent 53%);animation-timing-function:linear;animation-iteration-count:infinite}
+.rain.a{background-size:28px 150px;animation-name:sa;animation-duration:.45s}
+.rain.b{background-size:43px 230px;animation-name:sb;animation-duration:.75s;opacity:.12}
+@keyframes sa{to{background-position:0 150px}}
+@keyframes sb{to{background-position:0 230px}}
+.win.heavy .rain.a{opacity:.5}
+.win.heavy .rain.b{opacity:.55}
+.win.sent .rain.a,.win.sent .rain.b{opacity:0}
+
+/* saat berhasil masuk: hujan reda, pelangi, cahaya hangat, percikan cahaya */
+.rainbow{position:absolute;z-index:1;left:50%;top:calc(24vh - 30.6vmax);width:180vmax;height:180vmax;transform:translateX(-50%);border-radius:50%;opacity:0;filter:blur(4px);pointer-events:none;mix-blend-mode:screen;background:radial-gradient(circle closest-side,transparent 0 60%,rgba(255,70,70,.55) 60% 62%,rgba(255,160,50,.55) 62% 64%,rgba(255,230,70,.55) 64% 66%,rgba(90,210,110,.55) 66% 68%,rgba(70,150,255,.55) 68% 70%,rgba(150,90,230,.55) 70% 72%,transparent 72%)}
+.win.sent .rainbow{opacity:1;transition:opacity 6s 2.5s}
+.glow{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;mix-blend-mode:screen;background:radial-gradient(ellipse at 50% 100%,rgba(255,190,100,.55),rgba(255,150,70,.18) 45%,transparent 70%)}
+.win.sent .glow{opacity:1;transition:opacity 5s 1s}
+.spark{position:absolute;z-index:3;bottom:-10px;border-radius:50%;pointer-events:none;background:#ffe3a3;box-shadow:0 0 10px 3px rgba(255,200,110,.8);opacity:0;animation:rise linear infinite}
+@keyframes rise{0%{transform:translateY(0);opacity:0}15%{opacity:.9}100%{transform:translateY(-105vh) translateX(30px);opacity:0}}
+.write{clip-path:inset(0 100% 0 0);animation:write 2.2s steps(22,end) .8s forwards}
+@keyframes write{to{clip-path:inset(-10px -10px -10px -10px)}}
+.rise,.rise2{opacity:0;animation:fadeup 1.2s ease forwards}
+.rise{animation-delay:3s}
+.rise2{animation-delay:5s}
+@keyframes fadeup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.write,.rise,.rise2,.spark{animation:none;clip-path:none;opacity:1}.spark{display:none}}
