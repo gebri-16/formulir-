@@ -22,23 +22,36 @@ function makeCity(w, h) {
 }
 
 // Dipakai dua kali: tajam (pemandangan) dan buram (lapisan embun)
-function drawScene(ctx, w, h, city, blur) {
+function drawScene(ctx, w, h, city, blur, day = false) {
   ctx.save();
   ctx.filter = blur ? `blur(${blur}px)` : "none";
   const g = ctx.createLinearGradient(0, 0, 0, h);
-  g.addColorStop(0, "#050914");
-  g.addColorStop(0.6, "#14213d");
-  g.addColorStop(1, "#2a3b5e");
+  const sky = day ? ["#3f9be6", "#8fcaf3", "#ffe6b8"] : ["#050914", "#14213d", "#2a3b5e"];
+  g.addColorStop(0, sky[0]);
+  g.addColorStop(0.6, sky[1]);
+  g.addColorStop(1, sky[2]);
   ctx.fillStyle = g;
   ctx.fillRect(-40, -40, w + 80, h + 80);
   city.buildings.forEach((b) => {
-    ctx.fillStyle = "#0a0f1c";
+    ctx.fillStyle = day ? "#3d5372" : "#0a0f1c";
     ctx.fillRect(b.x, h - b.bh, b.bw, b.bh);
-    ctx.fillStyle = "rgba(255,205,110,.8)";
+    ctx.fillStyle = day ? "rgba(255,255,255,.35)" : "rgba(255,205,110,.8)";
     for (let wy = h - b.bh + 12; wy < h - 10; wy += 18)
       for (let wx = b.x + 8; wx < b.x + b.bw - 10; wx += 14)
         if ((wx * 7 + wy * 13) % 5 < 2) ctx.fillRect(wx, wy, 6, 9);
   });
+  if (day) {
+    // siang: matahari bersinar, lampu kota tidak perlu
+    const sx = w * 0.75, sy = h * 0.2;
+    const sg = ctx.createRadialGradient(sx, sy, 0, sx, sy, 220);
+    sg.addColorStop(0, "rgba(255,250,220,1)");
+    sg.addColorStop(0.15, "rgba(255,240,190,.85)");
+    sg.addColorStop(1, "rgba(255,230,170,0)");
+    ctx.fillStyle = sg;
+    ctx.fillRect(sx - 220, sy - 220, 440, 440);
+    ctx.restore();
+    return;
+  }
   city.lights.forEach((l) => {
     const rg = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r);
     rg.addColorStop(0, `hsla(${l.hue},95%,65%,.75)`);
@@ -62,6 +75,7 @@ const newDrop = (w, randomY) => ({
 
 export default function App() {
   const sharpRef = useRef(null);
+  const dayRef = useRef(null);
   const fogRef = useRef(null);
   const formRef = useRef(null);
   const baseRef = useRef(null);
@@ -94,6 +108,9 @@ export default function App() {
       sharpRef.current.height = fogRef.current.height = h;
       const city = makeCity(w, h);
       drawScene(sharpRef.current.getContext("2d"), w, h, city, 0.6);
+      dayRef.current.width = w;
+      dayRef.current.height = h;
+      drawScene(dayRef.current.getContext("2d"), w, h, city, 0.6, true); // versi siang
       const base = document.createElement("canvas");
       base.width = w;
       base.height = h;
@@ -314,6 +331,7 @@ export default function App() {
   return (
     <div className={`win${sound ? " heavy" : ""}${sent ? " sent" : ""}`}>
       <canvas ref={sharpRef} aria-hidden="true" />
+      <canvas ref={dayRef} aria-hidden="true" className="day" />
       <div className="rainbow" />
       <canvas
         ref={fogRef}

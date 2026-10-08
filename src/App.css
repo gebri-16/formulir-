@@ -48,7 +48,7 @@
 .win.sent .rain.a,.win.sent .rain.b{opacity:0}
 
 /* saat berhasil masuk: hujan reda, pelangi, cahaya hangat, percikan cahaya */
-.rainbow{position:absolute;z-index:1;left:50%;top:calc(24vh - 30.6vmax);width:180vmax;height:180vmax;transform:translateX(-50%);border-radius:50%;opacity:0;filter:blur(4px);pointer-events:none;mix-blend-mode:screen;background:radial-gradient(circle closest-side,transparent 0 60%,rgba(255,70,70,.55) 60% 62%,rgba(255,160,50,.55) 62% 64%,rgba(255,230,70,.55) 64% 66%,rgba(90,210,110,.55) 66% 68%,rgba(70,150,255,.55) 68% 70%,rgba(150,90,230,.55) 70% 72%,transparent 72%)}
+.rainbow{position:absolute;z-index:1;left:50%;top:calc(24vh - 30.6vmax);width:180vmax;height:180vmax;transform:translateX(-50%);border-radius:50%;opacity:0;filter:blur(4px);pointer-events:none;background:radial-gradient(circle closest-side,transparent 0 60%,rgba(255,70,70,.55) 60% 62%,rgba(255,160,50,.55) 62% 64%,rgba(255,230,70,.55) 64% 66%,rgba(90,210,110,.55) 66% 68%,rgba(70,150,255,.55) 68% 70%,rgba(150,90,230,.55) 70% 72%,transparent 72%)}
 .win.sent .rainbow{opacity:1;transition:opacity 6s 2.5s}
 .glow{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;mix-blend-mode:screen;background:radial-gradient(ellipse at 50% 100%,rgba(255,190,100,.55),rgba(255,150,70,.18) 45%,transparent 70%)}
 .win.sent .glow{opacity:1;transition:opacity 5s 1s}
@@ -61,3 +61,8 @@
 .rise2{animation-delay:5s}
 @keyframes fadeup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.write,.rise,.rise2,.spark{animation:none;clip-path:none;opacity:1}.spark{display:none}}
+
+/* malam berubah pelan-pelan jadi siang saat berhasil masuk */
+.day{opacity:0;pointer-events:none;transition:opacity 1s}
+.win.sent .day{opacity:1;transition:opacity 10s ease-in-out}
+.win.sent .done{text-shadow:0 2px 14px rgba(15,40,90,.85)}
