@@ -1,68 +1,597 @@
-.win{position:fixed;inset:0;overflow:hidden;background:#050914;color:#f4f8ff;font-family:'Caveat','Segoe Print','Bradley Hand',cursive}
-.win canvas{position:absolute;inset:0;width:100%;height:100%}
-.fog{touch-action:none;cursor:grab;transition:opacity 4s ease}
-.fog:active{cursor:grabbing}
-.fog.melt{opacity:0}
-.frame{position:absolute;inset:0;z-index:6;pointer-events:none;box-shadow:inset 0 0 0 14px #1b2029,inset 0 0 90px 30px rgba(0,0,0,.65)}
-.flash{position:absolute;inset:0;z-index:4;background:#cfe4ff;opacity:0;pointer-events:none}
-.flash.on{animation:flash .8s}
-@keyframes flash{0%{opacity:0}8%{opacity:.7}16%{opacity:.1}28%{opacity:.5}100%{opacity:0}}
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400..600&display=swap");
 
-.form{position:absolute;z-index:3;left:50%;top:50%;transform:translate(-50%,-50%);width:min(430px,86vw);text-shadow:0 1px 8px rgba(0,0,0,.6);transition:opacity .5s,filter .5s;pointer-events:none}
-.form>*{pointer-events:auto}
-.form h1{margin:0;font-size:clamp(3.2rem,8vw,5rem);font-weight:700;line-height:1}
-.sub{margin:4px 0 22px;font-size:1.5rem;opacity:.85}
-.form label{display:block;margin-bottom:16px;font-size:1.5rem}
-.form input{display:block;width:100%;background:transparent;border:0;border-bottom:2px solid rgba(255,255,255,.7);color:#fff;font:inherit;font-size:2rem;padding:2px 2px 4px;outline:none;transition:border-color .2s}
-.form input:focus{border-bottom-color:#9fd3ff}
-.form input:disabled{opacity:.6}
-.pw{position:relative;display:block}
-.pw input{padding-right:110px}
-.eye,.link{background:none;border:0;color:#bfe0ff;font:inherit;text-decoration:underline;cursor:pointer;padding:0}
-.eye{position:absolute;right:0;bottom:8px;font-size:1.2rem}
-.eye:disabled{display:none}
-.err{margin:0 0 6px;font-size:1.4rem;color:#ffc2c2;animation:shake .4s}
-@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+/* ---------- Token warna ---------- */
+.app[data-theme="day"] {
+  --ink: #2a1608;
+  --muted: #7a5a41;
+  --card: rgba(255, 250, 242, 0.84);
+  --line: #e6c7a2;
+  --accent: #ff7a18;
+  --accent-ink: #c24e00;
+  --input-bg: #ffffff;
+  --city: #9a5428;
+  --win-on: #ffe6b8;
+  --win-off: #b4703b;
+  --glow: rgba(255, 122, 24, 0.3);
+  --shadow: rgba(194, 78, 0, 0.25);
+}
+.app[data-theme="night"] {
+  --ink: #fff0df;
+  --muted: #bfa48a;
+  --card: rgba(26, 20, 16, 0.84);
+  --line: #4a3626;
+  --accent: #ff8a2a;
+  --accent-ink: #ffa04d;
+  --input-bg: #120d0a;
+  --city: #0a0705;
+  --win-on: #ffb45c;
+  --win-off: #1b1410;
+  --glow: rgba(255, 138, 42, 0.22);
+  --shadow: rgba(0, 0, 0, 0.55);
+}
 
-.drop{display:grid;place-items:center;margin:14px auto 0;width:88px;height:108px;border:0;cursor:pointer;color:#fff;font:inherit;font-size:1.5rem;border-radius:50% 50% 50% 50%/62% 62% 38% 38%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.8),rgba(150,200,255,.35) 45%,rgba(90,150,230,.6));box-shadow:inset -4px -6px 12px rgba(0,60,140,.4),0 8px 16px rgba(0,0,0,.4);transition:transform .3s,opacity .3s}
-.drop:disabled{opacity:.4;cursor:not-allowed}
-.drop:not(:disabled):hover{transform:translateY(8px)}
-.drop:not(:disabled):active{transform:translateY(70px) scaleY(1.25)}
-.done p{font-size:1.7rem}
+/* ---------- Dasar ---------- */
+body {
+  display: block;
+  margin: 0;
+  min-width: 0;
+  place-items: initial;
+}
+.app {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  color: var(--ink);
+  font-family: "Instrument Sans", system-ui, sans-serif;
+  transition: color 0.8s;
+}
+.app *,
+.app *::before,
+.app *::after {
+  box-sizing: border-box;
+}
+h1,
+h2,
+.brand {
+  font-family: "Bricolage Grotesque", "Instrument Sans", sans-serif;
+}
+button {
+  font: inherit;
+  cursor: pointer;
+}
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
 
-.bar{position:absolute;z-index:7;left:0;right:0;bottom:34px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:1.5rem;text-shadow:0 1px 6px rgba(0,0,0,.7)}
-.hint{animation:pulse 2.4s ease-in-out infinite}
-.hint.off{opacity:0;animation:none;transition:opacity .6s}
-@keyframes pulse{50%{opacity:.4}}
-.sound{position:absolute;z-index:7;top:30px;right:34px;background:rgba(10,15,28,.45);border:1px solid rgba(255,255,255,.35);border-radius:999px;color:#fff;font:inherit;font-size:1.25rem;padding:4px 16px;cursor:pointer}
-@media (prefers-reduced-motion:reduce){.flash.on,.hint{animation:none}}
+/* ---------- Latar ---------- */
+.scene {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.sky {
+  position: absolute;
+  inset: 0;
+  transition: opacity 1.4s ease;
+}
+.sky-day {
+  background: linear-gradient(180deg, #fff3e0 0%, #ffd29f 45%, #ff9a47 100%);
+  background-size: 100% 140%;
+  animation: langit 14s ease-in-out infinite alternate;
+}
+.sky-night {
+  background: linear-gradient(180deg, #0c0907 0%, #1d130d 55%, #4a2410 100%);
+  opacity: 0;
+}
+[data-theme="night"] .sky-night {
+  opacity: 1;
+}
+@keyframes langit {
+  to {
+    background-position: 0 100%;
+  }
+}
 
-/* hujan di luar: rintik (default) dan lebat (saat suara dinyalakan) */
-.rain{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;transition:opacity 2s;background-image:linear-gradient(100deg,transparent 47%,rgba(190,215,255,.4) 50%,transparent 53%);animation-timing-function:linear;animation-iteration-count:infinite}
-.rain.a{background-size:28px 150px;animation-name:sa;animation-duration:.45s}
-.rain.b{background-size:43px 230px;animation-name:sb;animation-duration:.75s;opacity:.12}
-@keyframes sa{to{background-position:0 150px}}
-@keyframes sb{to{background-position:0 230px}}
-.win.heavy .rain.a{opacity:.5}
-.win.heavy .rain.b{opacity:.55}
-.win.sent .rain.a,.win.sent .rain.b{opacity:0}
+.stars {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 1.4s;
+}
+[data-theme="night"] .stars {
+  opacity: 1;
+}
+.stars i {
+  position: absolute;
+  border-radius: 50%;
+  background: #ffe9cc;
+  animation: kedip 3.5s ease-in-out infinite;
+}
+@keyframes kedip {
+  50% {
+    opacity: 0.25;
+  }
+}
 
-/* saat berhasil masuk: hujan reda, pelangi, cahaya hangat, percikan cahaya */
-.rainbow{position:absolute;z-index:1;left:50%;top:calc(24vh - 30.6vmax);width:180vmax;height:180vmax;transform:translateX(-50%);border-radius:50%;opacity:0;filter:blur(4px);pointer-events:none;background:radial-gradient(circle closest-side,transparent 0 60%,rgba(255,70,70,.55) 60% 62%,rgba(255,160,50,.55) 62% 64%,rgba(255,230,70,.55) 64% 66%,rgba(90,210,110,.55) 66% 68%,rgba(70,150,255,.55) 68% 70%,rgba(150,90,230,.55) 70% 72%,transparent 72%)}
-.win.sent .rainbow{opacity:1;transition:opacity 6s 2.5s}
-.glow{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;mix-blend-mode:screen;background:radial-gradient(ellipse at 50% 100%,rgba(255,190,100,.55),rgba(255,150,70,.18) 45%,transparent 70%)}
-.win.sent .glow{opacity:1;transition:opacity 5s 1s}
-.spark{position:absolute;z-index:3;bottom:-10px;border-radius:50%;pointer-events:none;background:#ffe3a3;box-shadow:0 0 10px 3px rgba(255,200,110,.8);opacity:0;animation:rise linear infinite}
-@keyframes rise{0%{transform:translateY(0);opacity:0}15%{opacity:.9}100%{transform:translateY(-105vh) translateX(30px);opacity:0}}
-.write{clip-path:inset(0 100% 0 0);animation:write 2.2s steps(22,end) .8s forwards}
-@keyframes write{to{clip-path:inset(-10px -10px -10px -10px)}}
-.rise,.rise2{opacity:0;animation:fadeup 1.2s ease forwards}
-.rise{animation-delay:3s}
-.rise2{animation-delay:5s}
-@keyframes fadeup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion:reduce){.write,.rise,.rise2,.spark{animation:none;clip-path:none;opacity:1}.spark{display:none}}
+.sun,
+.moon {
+  position: absolute;
+  top: 11%;
+  right: 12%;
+  width: clamp(80px, 11vw, 130px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transition: transform 1.6s cubic-bezier(0.6, 0, 0.2, 1), opacity 1.2s;
+}
+.sun {
+  background: radial-gradient(circle at 40% 40%, #fff6dd, #ffb347 60%, #ff7a18);
+  box-shadow: 0 0 80px 30px rgba(255, 140, 40, 0.55);
+}
+.moon {
+  background: radial-gradient(circle at 35% 35%, #fff6e6, #ffd9a8 70%);
+  box-shadow: 0 0 70px 18px rgba(255, 190, 120, 0.3);
+  transform: translateY(70vh);
+  opacity: 0;
+}
+[data-theme="night"] .sun {
+  transform: translateY(70vh);
+  opacity: 0;
+}
+[data-theme="night"] .moon {
+  transform: none;
+  opacity: 1;
+}
 
-/* malam berubah pelan-pelan jadi siang saat berhasil masuk */
-.day{opacity:0;pointer-events:none;transition:opacity 1s}
-.win.sent .day{opacity:1;transition:opacity 10s ease-in-out}
-.win.sent .done{text-shadow:0 2px 14px rgba(15,40,90,.85)}
+.cloud {
+  position: absolute;
+  height: 34px;
+  border-radius: 40px;
+  background: rgba(255, 255, 255, 0.75);
+  filter: blur(1px);
+  transition: opacity 1.2s;
+  animation: awan linear infinite;
+}
+.cloud::before {
+  content: "";
+  position: absolute;
+  left: 22%;
+  top: -16px;
+  width: 42%;
+  height: 160%;
+  border-radius: 50%;
+  background: inherit;
+}
+.c1 { top: 18%; width: 150px; animation-duration: 70s; }
+.c2 { top: 32%; width: 100px; animation-duration: 95s; animation-delay: -40s; }
+.c3 { top: 9%; width: 120px; animation-duration: 120s; animation-delay: -80s; }
+[data-theme="night"] .cloud {
+  opacity: 0;
+}
+@keyframes awan {
+  from { left: -200px; }
+  to { left: 110%; }
+}
+
+.city {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 30vh;
+  min-height: 150px;
+}
+.bld {
+  fill: var(--city);
+  transition: fill 1.4s;
+}
+.win {
+  fill: var(--win-off);
+  transition: fill 1.4s;
+}
+[data-theme="night"] .win.on {
+  fill: var(--win-on);
+  animation: lampu 7s ease-in-out infinite;
+}
+@keyframes lampu {
+  0%, 92%, 100% { opacity: 1; }
+  95% { opacity: 0.35; }
+}
+
+.glow {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(520px circle at var(--mx, 70%) var(--my, 25%), var(--glow), transparent 60%);
+}
+
+/* ---------- Layout ---------- */
+.stage {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 20px clamp(16px, 4vw, 48px) 32px;
+}
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.brand {
+  font-weight: 800;
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.tswitch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px 6px 6px;
+  border: 1.5px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--ink);
+  backdrop-filter: blur(8px);
+}
+.track {
+  position: relative;
+  width: 52px;
+  height: 28px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ffc27a, #ff7a18);
+  transition: background 0.6s;
+}
+[data-theme="night"] .track {
+  background: linear-gradient(90deg, #3a2a1f, #1a120d);
+}
+.knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff3d6;
+  box-shadow: 0 0 10px rgba(255, 200, 120, 0.9);
+  transition: transform 0.6s cubic-bezier(0.5, 0, 0.2, 1), box-shadow 0.6s;
+}
+[data-theme="night"] .knob {
+  transform: translateX(24px);
+  box-shadow: inset -6px 0 0 #ffd29b;
+}
+.tlabel {
+  min-width: 48px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+/* ---------- Kartu flip ---------- */
+.perspective {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  perspective: 1600px;
+  padding-top: 12px;
+}
+.flip {
+  display: grid;
+  width: min(430px, 100%);
+  transform-style: preserve-3d;
+  transition: transform 0.9s cubic-bezier(0.6, -0.1, 0.2, 1.1);
+}
+.flip.is-daftar {
+  transform: rotateY(180deg);
+}
+.face {
+  grid-area: 1 / 1;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: visibility 0s 0.45s;
+}
+.face.hidden {
+  visibility: hidden;
+}
+.back {
+  transform: rotateY(180deg);
+}
+.card {
+  padding: clamp(24px, 5vw, 38px);
+  border: 1.5px solid var(--line);
+  border-radius: 28px;
+  background: var(--card);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 30px 70px -20px var(--shadow);
+  transition: background 0.8s, border-color 0.8s;
+}
+h1 {
+  margin: 0 0 6px;
+  font-size: clamp(1.6rem, 5vw, 2rem);
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.sub {
+  margin: 0 0 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* ---------- Input ---------- */
+.field {
+  margin-top: 16px;
+}
+.control {
+  position: relative;
+}
+.control input {
+  width: 100%;
+  padding: 24px 76px 8px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: var(--input-bg);
+  color: var(--ink);
+  font: inherit;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.25s, box-shadow 0.25s, background 0.8s;
+}
+.control input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--glow);
+}
+.control label {
+  position: absolute;
+  left: 15px;
+  top: 17px;
+  color: var(--muted);
+  pointer-events: none;
+  transform-origin: left top;
+  transition: transform 0.2s, color 0.2s;
+}
+.control input:focus + label,
+.control input:not(:placeholder-shown) + label {
+  transform: translateY(-11px) scale(0.78);
+  color: var(--accent-ink);
+}
+.bar {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 1px;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transition: transform 0.35s;
+}
+.control input:focus ~ .bar {
+  transform: scaleX(1);
+}
+.has-error .control input {
+  border-color: #e5484d;
+}
+.has-error .bar {
+  background: #e5484d;
+  transform: scaleX(1);
+}
+.eye {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--accent-ink);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.err {
+  margin: 6px 4px 0;
+  color: #d6343a;
+  font-size: 0.85rem;
+}
+[data-theme="night"] .err {
+  color: #ff8a8f;
+}
+.shake {
+  animation: getar 0.45s;
+}
+@keyframes getar {
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(7px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(3px); }
+}
+
+.meter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.segs {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+}
+.segs i {
+  flex: 1;
+  height: 5px;
+  border-radius: 5px;
+  background: var(--line);
+  transition: background 0.3s;
+}
+.meter span {
+  min-width: 96px;
+  text-align: right;
+}
+.meter[data-level="1"] .segs i:nth-child(-n + 1) { background: #e5484d; }
+.meter[data-level="2"] .segs i:nth-child(-n + 2) { background: #f59e0b; }
+.meter[data-level="3"] .segs i:nth-child(-n + 3) { background: #84b43a; }
+.meter[data-level="4"] .segs i { background: #2fa563; }
+
+/* ---------- Tombol ---------- */
+.btn {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 52px;
+  margin-top: 22px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--accent);
+  color: #2a1200;
+  font-weight: 700;
+  font-size: 1.05rem;
+  box-shadow: 0 10px 24px -8px var(--accent);
+  transition: transform 0.15s, border-radius 0.4s, width 0.4s, box-shadow 0.2s;
+}
+.btn.idle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px -8px var(--accent);
+}
+.btn.idle:active {
+  transform: translateY(1px) scale(0.98);
+}
+.btn.loading,
+.btn.done {
+  cursor: default;
+}
+.btn.done {
+  background: #2fa563;
+  color: #fff;
+}
+.btn-label {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+.ripple {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  transform: translate(-50%, -50%) scale(0);
+  animation: riak 0.6s ease-out forwards;
+}
+@keyframes riak {
+  to { transform: translate(-50%, -50%) scale(40); opacity: 0; }
+}
+.spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid rgba(42, 18, 0, 0.25);
+  border-top-color: #2a1200;
+  border-radius: 50%;
+  animation: putar 0.7s linear infinite;
+}
+@keyframes putar {
+  to { transform: rotate(360deg); }
+}
+.check {
+  width: 28px;
+  height: 28px;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.check path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: gambar 0.45s 0.05s ease-out forwards;
+}
+@keyframes gambar {
+  to { stroke-dashoffset: 0; }
+}
+
+.switch {
+  margin: 18px 0 0;
+  text-align: center;
+  color: var(--muted);
+}
+.switch button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent-ink);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---------- Berhasil ---------- */
+.confetti {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.welcome {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(20, 10, 3, 0.55);
+  backdrop-filter: blur(6px);
+  animation: muncul 0.3s;
+}
+.welcome-card {
+  width: min(420px, 100%);
+  padding: 36px 30px;
+  border-radius: 28px;
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  text-align: center;
+  animation: pop 0.6s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.welcome-card h2 {
+  margin: 0 0 8px;
+  font-size: clamp(1.7rem, 6vw, 2.3rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.welcome-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+@keyframes muncul {
+  from { opacity: 0; }
+}
+@keyframes pop {
+  from { transform: scale(0.6); opacity: 0; }
+}
+
+/* ---------- Responsif & aksesibilitas ---------- */
+@media (max-width: 480px) {
+  .tlabel { display: none; }
+  .tswitch { padding-right: 6px; }
+  .sun, .moon { right: 8%; top: 14%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app *, .app *::before, .app *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
